@@ -1,52 +1,52 @@
-import express from "express";
-import cors from "cors";
-import fs from "fs/promises";
-import path from "path";
+const express = require('express');
+const path = require('path');
+const cors = require('cors');
 
 const app = express();
-const port = 3001;
 
+// Permitir requisições de qualquer origem
 app.use(cors());
+
+// Definir o formato de requisição como JSON
 app.use(express.json());
 
-const contasPath = path.join(process.cwd(), "contas.json");
+// Dados de exemplo de contas (normalmente viria de um banco de dados)
+let contas = [
+  { id: 1, login: "usuario1", descricao: "Conta de exemplo", preco: 100 },
+  { id: 2, login: "usuario2", descricao: "Conta de exemplo 2", preco: 200 },
+];
 
-async function lerContas() {
-  const data = await fs.readFile(contasPath, "utf-8");
-  return JSON.parse(data);
-}
-
-async function salvarContas(contas) {
-  await fs.writeFile(contasPath, JSON.stringify(contas, null, 2));
-}
-
-app.get("/api/contas", async (req, res) => {
-  try {
-    const contas = await lerContas();
-    res.json(contas);
-  } catch (err) {
-    res.status(500).json({ error: "Erro ao carregar contas." });
-  }
+// Rota para listar as contas
+app.get('/api/contas', (req, res) => {
+  res.json(contas);
 });
 
-app.post("/api/comprar", async (req, res) => {
+// Rota para comprar uma conta
+app.post('/api/comprar', (req, res) => {
   const { id } = req.body;
-  try {
-    const contas = await lerContas();
-    const index = contas.findIndex((c) => c.id === id);
 
-    if (index === -1) return res.status(404).json({ error: "Conta não encontrada" });
+  // Buscar a conta pelo ID
+  const conta = contas.find(c => c.id === id);
 
-    const contaVendida = contas.splice(index, 1)[0];
-    await salvarContas(contas);
-
-    console.log(`Conta vendida: ${contaVendida.login}`);
-    res.status(200).json({ sucesso: true, conta: contaVendida });
-  } catch (err) {
-    res.status(500).json({ error: "Erro ao processar a compra." });
+  if (conta) {
+    // Remover a conta da lista de contas disponíveis
+    contas = contas.filter(c => c.id !== id);
+    return res.status(200).json({ success: true, message: 'Compra realizada com sucesso!', conta });
+  } else {
+    return res.status(404).json({ success: false, message: 'Conta não encontrada.' });
   }
 });
 
-app.listen(port, () => {
-  console.log(`Servidor rodando em https://vendaconta.onrender.com/api/contas"`);
+// Servir os arquivos estáticos do frontend
+app.use(express.static(path.join(__dirname, 'build')));
+
+// Rota para todas as outras requisições (React Router)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
+// Iniciar o servidor
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Servidor backend rodando na porta ${PORT}`);
 });
