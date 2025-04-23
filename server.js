@@ -48,5 +48,5 @@ app.post("/api/comprar", async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Servidor rodando em vendaconta.vercel.app`);
+  console.log(`Servidor rodando em https://vendaconta.onrender.com/`);
 });
