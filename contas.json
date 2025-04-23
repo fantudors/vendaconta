@@ -1,0 +1,5 @@
+[
+  { "id": 1, "login": "conta001", "descricao": "Conta level 400 com itens full", "preco": 50 },
+  { "id": 2, "login": "conta002", "descricao": "Conta level 380 com set excelente", "preco": 40 },
+  { "id": 3, "login": "conta003", "descricao": "Conta level 420 com wings 3", "preco": 60 }
+]
